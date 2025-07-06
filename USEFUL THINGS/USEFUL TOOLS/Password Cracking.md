@@ -1,0 +1,1 @@
+- [CrackStation](https://crackstation.net/) - can be used to crack hashes and get the result of the cracked hash

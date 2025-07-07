@@ -1,1 +1,2 @@
 - [CrackStation](https://crackstation.net/) - can be used to crack hashes and get the result of the cracked hash
+- [GitTools](https://github.com/internetwache/GitTools) - This repository contains three small python/bash scripts used for the Git research

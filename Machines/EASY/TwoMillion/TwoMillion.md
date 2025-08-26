@@ -12,7 +12,8 @@
 - It is a form where we have to enter an Invite Code in order to sign up
 - We try some Invite Code random but we get "Invalid invite code."
 
-- By checking the response we get from the page we see that we have some scripts related to invites `/js/inviteapi.min.js`![[Pasted image 20250709114910.png]]
+- By checking the response we get from the page we see that we have some scripts related to invites `/js/inviteapi.min.js`
+![[Pasted image 20250709114910.png]]
 
 - We go to the `js/inviteapi.min.js` and we get this obfuscated js script
 ![[Pasted image 20250709115244.png]]

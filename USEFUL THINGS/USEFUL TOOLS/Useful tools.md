@@ -8,3 +8,6 @@
 - [CyberChef](https://gchq.github.io/CyberChef/) - Used to encode or decode strings in various encoding languages
 ### Open files in certain formats
 - [ODFviewer](https://odfviewer.nsspot.net/) - Open Document Format (`.odt`, `.odp`, `.ods`) Viewer
+### Intercept HTTP Requests
+- [Requestbin](https://requestbin.whapi.cloud/) - ### gives you a URL that will collect requests made to it and let you inspect them in a human-friendly way
+

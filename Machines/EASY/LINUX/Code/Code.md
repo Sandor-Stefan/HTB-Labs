@@ -52,7 +52,7 @@ nc -lvnp 4444
 #### Root flag
 - By going through the files of the user I found a file named `database.db`
 - I open it with `sqlite3` and then write `select * from user;` and I got 2 users and their hash passwords
-![Pasted image 20250706141348](Pasted%20image%2020250706141348.png)
+![Pasted image 20250706141348](Images/Pasted%20image%2020250706141348.png)
 
 - Then I use [CrackStation](https://crackstation.net/) to crack the hash for `martin` and I got:
 	 - user `martin`

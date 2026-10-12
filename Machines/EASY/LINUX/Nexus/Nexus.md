@@ -4,16 +4,16 @@ Given the IP address I am tasked by myself to try and penetrate the target
 ### Enumeration
 
 First I use Nmap for port enumeration
-![Pasted image 20260720204135](Pasted%20image%2020260720204135.png)
+![Pasted image 20260720204135](Images/Pasted%20image%2020260720204135.png)
 - the scan shows the port 22 open for ssh and port 80 open for http which likely hosts a webserver
 
 ### Webserver
 
 The webserver contains a website about renewable energy 
-![Pasted image 20260720204434](Pasted%20image%2020260720204434.png)
+![Pasted image 20260720204434](Images/Pasted%20image%2020260720204434.png)
 - We do not get many info or anything useful from the website at the first glance
 - Continuing to look through it I found a job application on the main page in which I can get the email of the hiring manager `j.matthew@nexus.htb` which later could be useful
-![Pasted image 20260720204717](Pasted%20image%2020260720204717.png)
+![Pasted image 20260720204717](Images/Pasted%20image%2020260720204717.png)
 
 Since I don't get anything else valuable I decide to do some fuzzing for virtual host or hidden directories or files
 
@@ -21,25 +21,25 @@ One scan was successful that being the virtual host scan which returned with a n
 ```bash
 ffuf -u hhttp://nexus.htb -H 'Host: FUZZ.nexus.htb' -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -t 150 -ic -fc 302 
 ```
-![Pasted image 20260720205332](Pasted%20image%2020260720205332.png)
+![Pasted image 20260720205332](Images/Pasted%20image%2020260720205332.png)
 
 Checking the `git.nexus.htb` website I am met with a Gitea website which most likely holds a repo holding something valuable
 - I also learn that there are 2 users present on the website: `jones` and `admin`
-![Pasted image 20260720210331](Pasted%20image%2020260720210331.png)
+![Pasted image 20260720210331](Images/Pasted%20image%2020260720210331.png)
 - There is a repo indeed `krayin-docker-setup` owned by the `admin` user
-![Pasted image 20260720210443](Pasted%20image%2020260720210443.png)
+![Pasted image 20260720210443](Images/Pasted%20image%2020260720210443.png)
 - Through the 3 files present in the repo the interesting one is the `.env` 
 - The files holds the next info that could be useful:
 	- A new subdomain `billing.nexus.htb` which hosts a `Krayin CRM` app 
-![Pasted image 20260720211126](Pasted%20image%2020260720211126.png)
+![Pasted image 20260720211126](Images/Pasted%20image%2020260720211126.png)
 - a DB present but for credentials only the username is present:
-![Pasted image 20260720211157](Pasted%20image%2020260720211157.png)
+![Pasted image 20260720211157](Images/Pasted%20image%2020260720211157.png)
 
 One thing I completely missed was that this repo has 2 commits so it is possible that some data was different before
-![Pasted image 20260720211512](Pasted%20image%2020260720211512.png)
+![Pasted image 20260720211512](Images/Pasted%20image%2020260720211512.png)
 
 Checking the newer commit to see what was modified I found that the `.env` file contains the changes, these 2 being the subdomain that was changed and also there was a password left there before:
-![Pasted image 20260720211735](Pasted%20image%2020260720211735.png)
+![Pasted image 20260720211735](Images/Pasted%20image%2020260720211735.png)
 - The password `N27xh!!2ucY04` is for the DB for sure will help later on
 
 I tried to connect to the Gitea repo of jones with the password I found but no luck in doing that, I also tried to connect to the admin user but no luck in that either
@@ -47,7 +47,7 @@ I tried to connect to the Gitea repo of jones with the password I found but no l
 Now that I think the Gitea repo has been fully searched I can move on to the next part
 
 Next step is to check the `billings.nexus.htb` website which holds the `Krayin CRM` and maybe I have the luck to find some vulnerabilities there
-![Pasted image 20260721123148](Pasted%20image%2020260721123148.png)
+![Pasted image 20260721123148](Images/Pasted%20image%2020260721123148.png)
 - The page leads me to a login page so since there is an email and password required i made the choice to use the following credentials:
 	- email: `j.matthew@nexus.htb`
 	- password: `N27xh!!2ucY04`
@@ -55,7 +55,7 @@ Next step is to check the `billings.nexus.htb` website which holds the `Krayin C
 
 The most common thing to look up when you encounter software like this is the version and then check if there are any discovered vulnerabilities and also exploits
 - The version can be found by clicking the user profile in the top right corner
-![Pasted image 20260721124626](Pasted%20image%2020260721124626.png)
+![Pasted image 20260721124626](Images/Pasted%20image%2020260721124626.png)
 - The version is `2.2.0` 
 
 A quick search on Google reveal that there is indeed a vulnerability that leads to file upload that can lead to full RCE on the server
@@ -89,10 +89,10 @@ Then I use the PoC and let's see if it works
 ```bash
 python3 ./CVE-2026-38526.py -t http://billing.nexus.htb -u j.matthew@nexus.htb -p "N27xh\!\!2ucY04" -f ./shell.php
 ```
-![Pasted image 20260721131631](Pasted%20image%2020260721131631.png)
+![Pasted image 20260721131631](Images/Pasted%20image%2020260721131631.png)
 
 Checking the uploaded file path I found the web shell there and with the command `id` I found that the web shell is runs under the `www-data` user
-![Pasted image 20260721131950](Pasted%20image%2020260721131950.png)
+![Pasted image 20260721131950](Images/Pasted%20image%2020260721131950.png)
 
 ### Foothold
 
@@ -101,7 +101,7 @@ First thing to do is to see my current location with the command `pwd` which tel
 First thing is to check the app directory for interesting files like: config files, environment settings, databases, etc.
 - A quick search on Google tells me that the environment settings can be found in the .env file in the root directory of the app, for our case that would be `/var/www/krayin/.env`
 - This worked and it gave some valuable insight on the app settings, but the most interesting piece of info is the `DB_password` which seems to be different than the one present in the `.env` file inside the Gitea repo from before
-![Pasted image 20260721134228](Pasted%20image%2020260721134228.png)
+![Pasted image 20260721134228](Images/Pasted%20image%2020260721134228.png)
 - The new password is `y27xb3ha!!74GbR` and it could help us log in into another user account
 
 To find potential user targets I use the `ls -la /home` command to check what users have a folders present there (usually one of the user present there holds the user flag)
@@ -111,7 +111,7 @@ To find potential user targets I use the `ls -la /home` command to check what us
 I then try to ssh into the `john` user with the credential:
 - username: `john`
 - password: `y27xb3ha!!74GbR`
-![Pasted image 20260721135040](Pasted%20image%2020260721135040.png)
+![Pasted image 20260721135040](Images/Pasted%20image%2020260721135040.png)
 - The attempt worked and it gave me access inside the system and also the flag
 
 ### System Flag
@@ -120,16 +120,16 @@ The system flag is kinda tricky to get it at first guess, as after several metho
 ```bash
 systemctl list-timers
 ```
-![Pasted image 20260721141532](Pasted%20image%2020260721141532.png)
+![Pasted image 20260721141532](Images/Pasted%20image%2020260721141532.png)
 - The output shows a timer `gitea-template-sync.timer` which definitely looks suspicious and also the timer runs every minute (summing up LEFT + PASSED cols) 
 - Now let's see what actually runs every minute
-![Pasted image 20260721142124](Pasted%20image%2020260721142124.png)
+![Pasted image 20260721142124](Images/Pasted%20image%2020260721142124.png)
 - The script ran every minute is a python script found at `/etc/gitea/template-sync.py` 
 
 The script is large but in short it does the following:
 - Gets all repos that run as a template and syncs their file contents to `/home/git/template-staging/<owner>/<repo>`
 - The vulnerability is done at how the script processes file paths from `git ls-tree`
-![Pasted image 20260721145814](Pasted%20image%2020260721145814.png)
+![Pasted image 20260721145814](Images/Pasted%20image%2020260721145814.png)
 - there is no input sanitization present which can lead to directory traversal
 - `git ls-tree` outputs paths containing `..` without validation and `os.path.join()` resolves them we can write files everywhere the owner has access
 - Since the staging directory is at `/home/git/template-staging/<owner>/<repo>` we need `../../../../../` to reach `/root` and after that the easiest thing to do is to write an SSH key to `.ssh/authorized_keys`
@@ -138,7 +138,7 @@ The script is large but in short it does the following:
 
 1. First we go to the `jones` Gitea account and log in with his credentials we use to log in through ssh
 2. We create a new repository with the name `rce` and we select `Make repository a template`
-![Pasted image 20260721150631](Pasted%20image%2020260721150631.png)
+![Pasted image 20260721150631](Images/Pasted%20image%2020260721150631.png)
 3. Because git prevents creating files with `..` in the path we can bypass this by writing objects directly to `.git/objects/` 
 4. Next we clone the repo locally on our machine 
 ```bash
@@ -206,4 +206,4 @@ ssh -i /tmp/key root@nexus.htb
 ```
 
 Everything worked flawless and now I've got access to the entire system and I can retrieve the system flag
-![Pasted image 20260721152159](Pasted%20image%2020260721152159.png)
+![Pasted image 20260721152159](Images/Pasted%20image%2020260721152159.png)

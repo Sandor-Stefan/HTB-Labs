@@ -2,7 +2,7 @@
 **Challenge Scenario**
 ```
 A Junior Developer just switched to a new source control platform
-Can you fin the secret token?
+Can you find the secret token?
 ```
 
 The challenge gives me a folder `Illumination.JS` which contains 2 files `bot.js` and `config.json` and another directory `.git`
@@ -33,14 +33,14 @@ As it happens we also got that `config.json` and we shall check its content
 The only piece remaining is the `.git` directory which is a git repo 
 
 I `cd` into that directory and then I check its content
-![[Pasted image 20260916133757.png]]
+![Pasted image 20260916133757](Pasted%20image%2020260916133757.png)
 - a lot of files and also I can see the `bot.js` and `config.json` file so maybe there I will find the token
 
 The token from the newly found `config.json` file is the same as before so no luck
 
 A good thing when checking a git repository is to check the previous commits to see if any of them holds something different
 - To achieve that I run the command `git log` to see the log of the repo
-![[Pasted image 20260916133954.png]]
+![Pasted image 20260916133954](Pasted%20image%2020260916133954.png)
 - The commits are shown from the newest at the top of the file to the oldest at the bottom of the file
 
 The commit `47241a47f...` holds an interesting message
@@ -61,9 +61,9 @@ To solve the error we should specify with the argument `--work-tree` alongside t
 ```bash
 git --work-tree . checkout ddc606f8fa05c363ea4de20f31834e97dd527381
 ```
-![[Pasted image 20260916134734.png]]
+![Pasted image 20260916134734](Pasted%20image%2020260916134734.png)
 - The process was successful so now let's check the `config.json` file
-![[Pasted image 20260916134943.png]]
+![Pasted image 20260916134943](Pasted%20image%2020260916134943.png)
 - We got a new value for the `token` parameter so we only need to decode it from base64 to ascii
 ```bash
 echo '<token>' | base64 -d

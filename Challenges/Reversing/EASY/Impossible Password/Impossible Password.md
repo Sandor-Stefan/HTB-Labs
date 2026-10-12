@@ -6,13 +6,13 @@ Are you able to cheat me and get the flag?
 We are given an executable `impossible_password.bin` and we have to work with it to get the flag
 
 First time running the script, I noticed that it takes an input and the repeats it inside `[]` closed brackets
-![[Pasted image 20260915193625.png]]
+![Pasted image 20260915193625](Pasted%20image%2020260915193625.png)
 - So most probably the goal is to find the password
 
 First thing I can try is to disassemble and decompile the code and for that I will use ghidra
 
 In the symbol tree one function especially holds gets my attention
-![[Pasted image 20260915194024.png]]
+![Pasted image 20260915194024](Pasted%20image%2020260915194024.png)
 
 This function holds the code of the binary and we can uncover what it does behind the curtain
 ```C
@@ -92,16 +92,16 @@ The flow of the function is as follows:
 	- This function most probably prints the flag 
 
 Since we got the value of the first key, the only thing remaining is to find the 2nd key value so we have to check the `FUN_0040078d` function
-![[Pasted image 20260915194909.png]]
+![Pasted image 20260915194909](Pasted%20image%2020260915194909.png)
 - Unfortunately as it can be seen the construction of the string is quite complicated as it uses for every character the formula `'!' + rand() % 0x5e` and the `rand()` function is seeded using the `time()` function, meaning that is  very difficult to reconstruct the key
 
 Since finding the 2nd key is out of discussion we go back to the function `FUN_00400978` which prints the flag
-![[Pasted image 20260915195233.png]]
+![Pasted image 20260915195233](Pasted%20image%2020260915195233.png)
 - The construction of the flag is easier as it takes 14 bytes from the address given as a parameter or until one of the bytes is `0x09` then for each character it does the XOR operation of the character with 9
 
 Since the parameter is `local_48` it means that it starts from its value `0x41` and it goes until the `local_35` variable address
 - All this happens because the variables are stored in memory one after another having consecutive addresses
-![[Pasted image 20260915195827.png]]
+![Pasted image 20260915195827](Pasted%20image%2020260915195827.png)
 
 Getting all the values from `local_48` to `local_35` and decoding them we get the following string `A]Kr=9k0=0o0;k1?k81t`
 

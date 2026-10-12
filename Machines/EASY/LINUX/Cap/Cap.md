@@ -20,7 +20,7 @@ nmap -sC -sV 10.10.10.245
 - at `Security Snapshot` menu item we have a button `Download` which gives us a packet capture file which can be examined using `WireShark` 
 - I notice that in the URL when I create a new capture that is of form `/data/<id>` the `<id>` changes for every capture 
 - By browsing `/data/0` we reveal a packet capture with a lot of packets
-- After downloading the file and going through it we reveal the user credentials ![[Pasted image 20250626205506.png]]
+- After downloading the file and going through it we reveal the user credentials ![Pasted image 20250626205506](Pasted%20image%2020250626205506.png)
 	- username : `nathan` 
 	- password: `Buck3tH4TF0RM3!`
 

